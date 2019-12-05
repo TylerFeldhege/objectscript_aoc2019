@@ -1,7 +1,7 @@
-Class eshvarov.Advent2019.Base
+Class advent2019.Base
 {
 
-Parameter Folder = "/irisdev/app/";
+Parameter Folder = "/irisdev/app/src/cls/advent2019/Files/";
 
 ClassMethod GetInput(fn) As %Stream
 {
