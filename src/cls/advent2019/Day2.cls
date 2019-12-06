@@ -1,70 +1,157 @@
 Class advent2019.Day2 Extends advent2019.Base
 {
 
-Parameter InputFile = "input1.txt";
+Parameter InputFile = "input2.txt";
 
 ClassMethod Run(verbose = 0) As %Integer
 {
-   set stream=..GetInput(..#InputFile)
+    set stream=..GetInput(..#InputFile)
+    set line = stream.ReadLine()
+    set $PIECE(line,",",1+1,1+1)=12
+    set $PIECE(line,",",2+1,2+1)=2
 
-    w "Hit Func",1
-    set totalweight = 0
-
-    while 'stream.AtEnd{
-        set line = stream.ReadLine()
-        set divided = line/3
-        set dividedRounded = $SYSTEM.SQL.FLOOR(divided)
-        set moduleweight = dividedRounded - 2
-        w "Module Weight: "_moduleweight,!
-        set totalFuelWeight = 0
-        set fuelWeight = ..calculateFuel(moduleweight)
-        w "Extra Fuel Weight:"_fuelWeight,!
-        while fuelWeight > 0{
-            set totalFuelWeight = totalFuelWeight + fuelWeight
-            set fuelWeight = ..calculateFuel(fuelWeight)
-            w "Extra Fuel Weight:"_fuelWeight,!
-        }
-        w "Total Fuel Weight:"_totalFuelWeight,!
-        set totalweight = totalweight + moduleweight + totalFuelWeight
-
+    //set line = "1,1,1,4,99,5,6,0,99"
+    if verbose = 1{
+        w "Original Line: "_line,!
     }
 
-    return totalweight
-}
+    set currentPoint = 0
+    set opcode1 = ..getPosition(line,currentPoint)
 
-// Hard Solution that didn't work
+    while opcode1 '= "99"
+    {
+        set opcode1 = ..getPosition(line,currentPoint)
+        set opcode2 = ..getPosition(line,currentPoint+1)
+        set opcode3 = ..getPosition(line,currentPoint+2)
+        set opcode4 = ..getPosition(line,currentPoint+3)
+
+        if verbose = 1
+        {
+            w "Opcode1: "_opcode1,!
+            w "Opcode2: "_opcode2,!
+            w "Opcode3: "_opcode3,!
+            w "Opcode4: "_opcode4,!
+        }
+
+        //Addition
+        if opcode1 = "1"
+        {
+            //Add 1 to opcode4 because Iris arrays start at 1 instead of 0
+            set $PIECE(line,",",opcode4+1) = ..getPosition(line,opcode2) + ..getPosition(line,opcode3)
+        }
+        //Multiplication
+        if opcode1 = "2"
+        {
+            //Add 1 to opcode4 because Iris arrays start at 1 instead of 0
+            set $PIECE(line,",",opcode4+1) = ..getPosition(line,opcode2) * ..getPosition(line,opcode3)
+        }
+
+        //Halt
+        if opcode1 = "99"{
+            write "Final Line: "_line,!
+            return $$$OK
+        }
+
+        set currentPoint = currentPoint + 4
+        set opcode1 = ..getPosition(line,currentPoint)
+    }
+    
+    if verbose = 1{
+        w "Final Line: ",line,!
+    }
+    
+    return ..getPosition(line,0)
+}
 
 ClassMethod Run2(verbose = 0) As %Integer
 {
-    set day1Fuel = ##class(advent2019.Day1).Run()
-    w "Day 1 Fuel "_day1Fuel,!
+    set noun = 0
+    set verb = 0
+    
+    for noun=0:1:99{
+        w "Current Noun: "_noun,!
+        for verb=0:1:99{
+            set result = ..RunProgram(noun,verb,0)
 
-    set fuelToCalculate = 1969 //day1Fuel
-    set totalFuelWeight = 0
+            if result = "19690720"
+            {
+                set result = 100*noun + verb
+                if verbose = 1
+                {
+                    w "Noun: "_noun,!
+                    w "Verb: "_verb,!
+                    w "Result: "_result,!
+                }
+                return result
 
-    set left = ..calculateFuel(fuelToCalculate)
-    w left,!
-    while left > 0{
-        set totalFuelWeight = totalFuelWeight + left
-        set left = ..calculateFuel(left)
-        w left,!
+            }
+        
+        }
     }
 
-    set totalWeight = day1Fuel + totalFuelWeight
 
-    w "Day 1 Fuel: "_day1Fuel,!
-    w "Extra Fuel Needed: "_totalFuelWeight,!
-    w "Total: "_totalWeight,!
-
-    return totalWeight
+    //return ..RunProgram(12,2,verbose)
+    return $$$OK
 }
 
-ClassMethod calculateFuel(incomingFuel As %Integer) As %Integer
+ClassMethod RunProgram(noun As %Integer, verb As %Integer, verbose = 0) As %Integer
 {
-    set divided = incomingFuel/3
-    set dividedRounded = $SYSTEM.SQL.FLOOR(divided)
-    set fuelWeight = dividedRounded - 2
-    return fuelWeight
+    set stream=..GetInput(..#InputFile)
+    set initialMemory = stream.ReadLine()
+    set $PIECE(initialMemory,",",1+1,1+1)=noun
+    set $PIECE(initialMemory,",",2+1,2+1)=verb
+    set memory = initialMemory
+
+    //set line = "1,1,1,4,99,5,6,0,99"
+    if verbose = 1{
+        w "Original Line: "_memory,!
+    }
+
+    set instructionPointer = 0
+    set opcode1 = ..getPosition(memory,instructionPointer)
+
+    while opcode1 '= "99"
+    {
+        set opcode1 = ..getPosition(memory,instructionPointer)
+        set opcode2 = ..getPosition(memory,instructionPointer+1)
+        set opcode3 = ..getPosition(memory,instructionPointer+2)
+        set opcode4 = ..getPosition(memory,instructionPointer+3)
+
+        if verbose = 1
+        {
+            w "Opcode1: "_opcode1,!
+            w "Opcode2: "_opcode2,!
+            w "Opcode3: "_opcode3,!
+            w "Opcode4: "_opcode4,!
+        }
+
+        //Addition
+        if opcode1 = "1"
+        {
+            //Add 1 to opcode4 because Iris arrays start at 1 instead of 0
+            set $PIECE(memory,",",opcode4+1) = ..getPosition(memory,opcode2) + ..getPosition(memory,opcode3)
+        }
+        //Multiplication
+        if opcode1 = "2"
+        {
+            //Add 1 to opcode4 because Iris arrays start at 1 instead of 0
+            set $PIECE(memory,",",opcode4+1) = ..getPosition(memory,opcode2) * ..getPosition(memory,opcode3)
+        }
+
+        set instructionPointer = instructionPointer + 4
+        set opcode1 = ..getPosition(memory,instructionPointer)
+    }
+    
+    if verbose = 1{
+        w "Final memory: "_memory,!
+    }
+    
+    return ..getPosition(memory,0)
+}
+
+ClassMethod getPosition(memory As %String, address As %Integer) As %Integer
+{
+    return $PIECE(memory,",",address+1)
 }
 
 }
